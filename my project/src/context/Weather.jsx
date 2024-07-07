@@ -1,40 +1,36 @@
-import { createContext, useContext, useState } from "react";
-import { getWeatherDataForCity, getWeatherDataForlocation } from "../api";
-export const WeatherContext = createContext(null);
-/* to read the context*/
+import React, { createContext, useContext, useState } from "react";
+import { getWeatherDataForCity, getWeatherDataForLocation } from "../api";
+
+const WeatherContext = createContext();
+
 export const useWeather = () => {
   return useContext(WeatherContext);
 };
-export const WeatherProvider = (props) => {
-    console.log("hii",props)
+
+export const WeatherProvider = ({ children }) => {
   const [data, setData] = useState(null);
-  const [searchCity, setSearchCity] = useState(null);
-  /* when we click on it then we get data */
+  const [searchCity, setSearchCity] = useState("");
+
   const fetchData = async () => {
-    const response = await getWeatherDataForCity(searchCity);
-    /* then all the response in setdata after this all components get render after this */
-    setData(response);
+    if (searchCity) {
+      const weatherData = await getWeatherDataForCity(searchCity);
+      setData(weatherData);
+    }
   };
-  /*this help in getting user lat and lon */
-  const fetchCurrentUserLocationData = () => {
-    navigator.geolaction.getCurrentPositon((position) => {
-      getWeatherDataForlocation(
-        position.coords.latitude,
-        position.coords.longitude
-      ).then((data) => setData(data));
-    });
+
+  const fetchCurrentUserLocationData = async () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        const weatherData = await getWeatherDataForLocation(latitude, longitude);
+        setData(weatherData);
+      });
+    }
   };
+
   return (
-    <WeatherContext.Provider
-      value={{
-        searchCity,
-        data,
-        setSearchCity,
-        fetchData,
-        fetchCurrentUserLocationData,
-      }}
-    >
-      {props.childern}
+    <WeatherContext.Provider value={{ data, searchCity, setSearchCity, fetchData, fetchCurrentUserLocationData }}>
+      {children}
     </WeatherContext.Provider>
   );
 };

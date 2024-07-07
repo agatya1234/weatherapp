@@ -1,5 +1,6 @@
 import React from "react";
 import { useWeather } from "../context/Weather";
+
 const Input = () => {
   const weather = useWeather();
 
@@ -12,4 +13,5 @@ const Input = () => {
     />
   );
 };
+
 export default Input;
